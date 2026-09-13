@@ -1,8 +1,13 @@
+import os
 from fastapi import FastAPI
+from azure.monitor.opentelemetry import configure_azure_monitor
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.routes.analyze import router as analyze_router
 
+connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
+if connection_string:
+    configure_azure_monitor(connection_string=connection_string)
 
 app = FastAPI(
     title="AI Content Monitor",
