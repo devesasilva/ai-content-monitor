@@ -1,7 +1,3 @@
-import sys
-
-sys.path = [p for p in sys.path if not p.startswith('/agents')]
-
 import os
 from azure.monitor.opentelemetry import configure_azure_monitor
 from fastapi import FastAPI
@@ -13,8 +9,7 @@ connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
 
 if connection_string:
     configure_azure_monitor(
-        connection_string=connection_string,
-        logger_name="azure_monitor"
+        connection_string=connection_string
     )
 
 app = FastAPI(
