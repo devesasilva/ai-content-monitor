@@ -1,3 +1,7 @@
+import sys
+
+sys.path = [p for p in sys.path if not p.startswith('/agents')]
+
 import os
 from azure.monitor.opentelemetry import configure_azure_monitor
 from fastapi import FastAPI
