@@ -8,6 +8,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.routes.analyze import router as analyze_router
 
+
 logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(
@@ -35,9 +36,11 @@ if connection_string:
         enable_live_metrics=True
     )
 
+
 @app.get("/health")
 def health():
     return {"status": "UP"}
+
 
 app.include_router(analyze_router)
 
