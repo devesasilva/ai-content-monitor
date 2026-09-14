@@ -22,19 +22,26 @@ async def analyze_content(
 ):
     if text is not None:
         text = text.strip()
+        if text == "":
+            text = None
 
-    if not text and image is None:
+    image_bytes = None
+    if image and image.filename:
+        image_bytes = await image.read()
+        if len(image_bytes) == 0:
+            image_bytes = None
+
+    has_text = text is not None
+    has_image = image_bytes is not None
+
+    if not has_text and not has_image:
         raise HTTPException(
             status_code=400,
             detail="É necessário informar texto, imagem ou ambos."
         )
 
-    input_type = "both" if (text and image) else ("text" if text else "image")
+    input_type = "both" if (has_text and has_image) else ("text" if has_text else "image")
     attributes = {"input_type": input_type}
-
-    image_bytes = None
-    if image:
-        image_bytes = await image.read()
 
     start_time = time.time()
     content_analysis_total.add(1, attributes)
