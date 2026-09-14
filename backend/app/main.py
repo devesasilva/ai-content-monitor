@@ -2,14 +2,19 @@ import os
 import logging
 
 from azure.monitor.opentelemetry import configure_azure_monitor
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.routes.analyze import router as analyze_router
 
-
 logging.basicConfig(level=logging.INFO)
+
+logging.getLogger("azure").setLevel(logging.WARNING)
+logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(logging.WARNING)
+logging.getLogger("azure.monitor.opentelemetry").setLevel(logging.WARNING)
+logging.getLogger("opentelemetry").setLevel(logging.WARNING)
 
 app = FastAPI(
     title="AI Content Monitor",
@@ -35,6 +40,7 @@ if connection_string:
         connection_string=connection_string,
         enable_live_metrics=True
     )
+    FastAPIInstrumentor.instrument_app(app)
 
 
 @app.get("/health")
