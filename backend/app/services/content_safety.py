@@ -82,7 +82,7 @@ class ContentSafetyService:
         start_time = time.perf_counter()
 
         try:
-            content_analysis_total.inc()
+            content_analysis_total.add(1)
 
             analyzed_text = text is not None
             analyzed_image = image_bytes is not None
@@ -114,9 +114,9 @@ class ContentSafetyService:
             status = "blocked" if severity > 0 else "approved"
 
             if status == "approved":
-                content_approved_total.inc()
+                content_approved_total.add(1)
             else:
-                content_blocked_total.inc()
+                content_blocked_total.add(1)
 
             return {
                 "status": status,
@@ -135,16 +135,16 @@ class ContentSafetyService:
             raise
 
         except AzureError as exc:
-            content_analysis_errors_total.inc()
+            content_analysis_errors_total.add(1)
 
             raise ContentSafetyServiceError(
                 "Não foi possível realizar a análise no Azure Content Safety."
             ) from exc
 
         except Exception:
-            content_analysis_errors_total.inc()
+            content_analysis_errors_total.add(1)
             raise
 
         finally:
             duration = time.perf_counter() - start_time
-            content_analysis_duration_seconds.observe(duration)
+            content_analysis_duration_seconds.record(duration)
