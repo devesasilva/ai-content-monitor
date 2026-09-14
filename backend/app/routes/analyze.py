@@ -52,7 +52,13 @@ async def analyze_content(
             image_bytes=image_bytes
         )
 
-        status_str = str(result.status).upper()
+        if isinstance(result, dict):
+            status_val = result.get("status")
+        else:
+            status_val = getattr(result, "status", None)
+
+        status_str = str(status_val).upper() if status_val is not None else ""
+
         if status_str in ["APPROVED", "OK", "SAFE"]:
             content_approved_total.add(1, attributes)
         else:
