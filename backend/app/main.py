@@ -2,19 +2,27 @@ import os
 import logging
 
 from azure.monitor.opentelemetry import configure_azure_monitor
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
 
-from app.routes.analyze import router as analyze_router
-
 logging.basicConfig(level=logging.INFO)
-
 logging.getLogger("azure").setLevel(logging.WARNING)
 logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(logging.WARNING)
 logging.getLogger("azure.monitor.opentelemetry").setLevel(logging.WARNING)
 logging.getLogger("opentelemetry").setLevel(logging.WARNING)
+
+connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
+
+if connection_string:
+    configure_azure_monitor(
+        connection_string=connection_string,
+        enable_live_metrics=True
+    )
+
+# 3. Importar as rotas e métricas após a inicialização do Azure Monitor
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from app.routes.analyze import router as analyze_router
 
 app = FastAPI(
     title="AI Content Monitor",
@@ -33,20 +41,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
-
 if connection_string:
-    configure_azure_monitor(
-        connection_string=connection_string,
-        enable_live_metrics=True
-    )
     FastAPIInstrumentor.instrument_app(app)
-
 
 @app.get("/health")
 def health():
     return {"status": "UP"}
-
 
 app.include_router(analyze_router)
 
