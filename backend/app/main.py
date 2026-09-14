@@ -20,7 +20,6 @@ if connection_string:
         enable_live_metrics=True
     )
 
-# 3. Importar as rotas e métricas após a inicialização do Azure Monitor
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from app.routes.analyze import router as analyze_router
 
