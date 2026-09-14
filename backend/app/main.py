@@ -17,7 +17,7 @@ connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
 if connection_string:
     configure_azure_monitor(
         connection_string=connection_string,
-        enable_live_metrics=True
+        enable_live_metrics=False
     )
 
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
