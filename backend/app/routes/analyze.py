@@ -15,7 +15,6 @@ from app.metrics import (
 router = APIRouter()
 content_safety_service = ContentSafetyService()
 
-
 @router.post("/analyze", response_model=AnalyzeResponse)
 async def analyze_content(
     text: str | None = Form(default=None),
@@ -30,12 +29,15 @@ async def analyze_content(
             detail="É necessário informar texto, imagem ou ambos."
         )
 
+    input_type = "both" if (text and image) else ("text" if text else "image")
+    attributes = {"input_type": input_type}
+
     image_bytes = None
     if image:
         image_bytes = await image.read()
 
     start_time = time.time()
-    content_analysis_total.add(1)
+    content_analysis_total.add(1, attributes)
 
     try:
         result = content_safety_service.analyze(
@@ -43,22 +45,23 @@ async def analyze_content(
             image_bytes=image_bytes
         )
 
-        if result.status.upper() in ["APPROVED", "OK", "SAFE"]:
-            content_approved_total.add(1)
+        status_str = str(result.status).upper()
+        if status_str in ["APPROVED", "OK", "SAFE"]:
+            content_approved_total.add(1, attributes)
         else:
-            content_blocked_total.add(1)
+            content_blocked_total.add(1, attributes)
 
         return result
 
     except ContentSafetyServiceError as exc:
-        content_analysis_errors_total.add(1)
+        content_analysis_errors_total.add(1, {"error_type": "service_error", **attributes})
         raise HTTPException(
             status_code=502,
             detail=str(exc)
         ) from exc
     except Exception as exc:
-        content_analysis_errors_total.add(1)
+        content_analysis_errors_total.add(1, {"error_type": "internal_error", **attributes})
         raise exc
     finally:
         duration = time.time() - start_time
-        content_analysis_duration_seconds.record(duration)
+        content_analysis_duration_seconds.record(duration, attributes)
