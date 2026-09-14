@@ -1,27 +1,29 @@
-from prometheus_client import Counter, Histogram
+from opentelemetry import metrics
 
+meter = metrics.get_meter("ai_content_monitor")
 
-content_analysis_total = Counter(
-    "content_analysis_total",
-    "Total de análises de conteúdo realizadas"
+content_analysis_total = meter.create_counter(
+    name="content_analysis_total",
+    description="Total de analises de conteudo realizadas"
 )
 
-content_analysis_errors_total = Counter(
-    "content_analysis_errors_total",
-    "Total de erros durante análises de conteúdo"
+content_analysis_errors_total = meter.create_counter(
+    name="content_analysis_errors_total",
+    description="Total de erros durante analises de conteudo"
 )
 
-content_analysis_duration_seconds = Histogram(
-    "content_analysis_duration_seconds",
-    "Tempo de duração das análises de conteúdo"
+content_approved_total = meter.create_counter(
+    name="content_approved_total",
+    description="Total de conteudos aprovados"
 )
 
-content_approved_total = Counter(
-    "content_approved_total",
-    "Total de conteúdos aprovados"
+content_blocked_total = meter.create_counter(
+    name="content_blocked_total",
+    description="Total de conteudos bloqueados"
 )
 
-content_blocked_total = Counter(
-    "content_blocked_total",
-    "Total de conteúdos bloqueados"
-)   
+content_analysis_duration_seconds = meter.create_histogram(
+    name="content_analysis_duration_seconds",
+    description="Tempo de duracao das analises de conteudo",
+    unit="s"
+)
